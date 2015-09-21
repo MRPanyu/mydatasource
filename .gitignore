@@ -1,0 +1,9 @@
+*.pdb
+*.class
+*.zip
+*.tar
+*.rar
+*.log
+bin
+build
+target
