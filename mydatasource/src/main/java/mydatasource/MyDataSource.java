@@ -28,11 +28,8 @@ public class MyDataSource implements DataSource {
 	protected Log logger = LogFactory.getLog(this.getClass());
 
 	protected DataSource dataSource;
-	protected List<String> decorators;
-	protected List<Class<?>> connectionDecorators;
-	protected List<Class<?>> statementDecorators;
-	protected List<Class<?>> preparedStatementDecorators;
-	protected List<Class<?>> callableStatementDecorators;
+	protected List<String> connectionDecorators = new ArrayList<String>();
+	protected List<Class<?>> connectionDecoratorClasses = new ArrayList<Class<?>>();
 	protected Map<String, Map<String, Object>> dataStorage = new HashMap<String, Map<String, Object>>();
 	protected Properties configs = new Properties();
 
@@ -51,84 +48,36 @@ public class MyDataSource implements DataSource {
 	}
 
 	/**
-	 * A list of decorator class names. Any class in this list should be
-	 * subclass of {@link ConnectionDecorator}, {@link StatementDecorator},
-	 * {@link PreparedStatementDecorator} or {@link CallableStatementDecorator}.
-	 * Order of this list is the order of decorators from inside to outside.
+	 * List of {@link ConnectionDecorator} class names.
 	 */
-	public List<String> getDecorators() {
-		return decorators;
-	}
-
-	/**
-	 * A list of decorator class names. Any class in this list should be
-	 * subclass of {@link ConnectionDecorator}, {@link StatementDecorator},
-	 * {@link PreparedStatementDecorator} or {@link CallableStatementDecorator}.
-	 * Order of this list is the order of decorators from inside to outside.
-	 */
-	public void setDecorators(List<String> decorators) {
-		this.decorators = decorators;
-		this.connectionDecorators = new ArrayList<Class<?>>();
-		this.statementDecorators = new ArrayList<Class<?>>();
-		this.preparedStatementDecorators = new ArrayList<Class<?>>();
-		this.callableStatementDecorators = new ArrayList<Class<?>>();
-		for (String decorator : decorators) {
-			try {
-				Class<?> decoratorClass = Class.forName(decorator);
-				if (ConnectionDecorator.class.isAssignableFrom(decoratorClass)
-						&& !MyConnectionDecorator.class.equals(decoratorClass)) {
-					this.connectionDecorators.add(decoratorClass);
-				} else if (CallableStatementDecorator.class
-						.isAssignableFrom(decoratorClass)) {
-					this.callableStatementDecorators.add(decoratorClass);
-				} else if (PreparedStatementDecorator.class
-						.isAssignableFrom(decoratorClass)) {
-					this.preparedStatementDecorators.add(decoratorClass);
-				} else if (StatementDecorator.class
-						.isAssignableFrom(decoratorClass)) {
-					this.statementDecorators.add(decoratorClass);
-				} else {
-					logger.error("Class is not of any decorator type: "
-							+ decorator);
-				}
-			} catch (ClassNotFoundException e) {
-				logger.error("Cannot find decorator class: " + decorator);
-			}
-		}
-	}
-
-	public List<Class<?>> getConnectionDecorators() {
+	public List<String> getConnectionDecorators() {
 		return connectionDecorators;
 	}
 
-	public void setConnectionDecorators(List<Class<?>> connectionDecorators) {
+	/**
+	 * List of {@link ConnectionDecorator} class names.
+	 */
+	public void setConnectionDecorators(List<String> connectionDecorators) {
+		if (connectionDecorators == null) {
+			throw new IllegalArgumentException(
+					"connectionDecorators cannot be null");
+		}
 		this.connectionDecorators = connectionDecorators;
-	}
-
-	public List<Class<?>> getStatementDecorators() {
-		return statementDecorators;
-	}
-
-	public void setStatementDecorators(List<Class<?>> statementDecorators) {
-		this.statementDecorators = statementDecorators;
-	}
-
-	public List<Class<?>> getPreparedStatementDecorators() {
-		return preparedStatementDecorators;
-	}
-
-	public void setPreparedStatementDecorators(
-			List<Class<?>> preparedStatementDecorators) {
-		this.preparedStatementDecorators = preparedStatementDecorators;
-	}
-
-	public List<Class<?>> getCallableStatementDecorators() {
-		return callableStatementDecorators;
-	}
-
-	public void setCallableStatementDecorators(
-			List<Class<?>> callableStatementDecorators) {
-		this.callableStatementDecorators = callableStatementDecorators;
+		this.connectionDecoratorClasses = new ArrayList<Class<?>>();
+		for (String clsName : connectionDecorators) {
+			try {
+				Class<?> cls = Class.forName(clsName);
+				if (!ConnectionDecorator.class.isAssignableFrom(cls)) {
+					logger.error("Not a ConnectionDecorator class: " + clsName);
+					throw new RuntimeException(
+							"Not a ConnectionDecorator class: " + clsName);
+				}
+				this.connectionDecoratorClasses.add(cls);
+			} catch (ClassNotFoundException e) {
+				logger.error("Cannot find decorator class: " + clsName);
+				throw new RuntimeException(e);
+			}
+		}
 	}
 
 	/**
@@ -221,11 +170,12 @@ public class MyDataSource implements DataSource {
 
 	protected Connection decorateConnection(Connection connection) {
 		Connection curConn = connection;
-		// add other decorators
-		for (Class<?> decClass : connectionDecorators) {
+		List<ConnectionDecorator> decs = new ArrayList<ConnectionDecorator>();
+		for (Class<?> decClass : connectionDecoratorClasses) {
 			try {
 				ConnectionDecorator dec = (ConnectionDecorator) decClass
 						.newInstance();
+				decs.add(dec);
 				dec.setMyDataSource(this);
 				dec.setDelegateConnection(curConn);
 				curConn = dec;
@@ -235,11 +185,11 @@ public class MyDataSource implements DataSource {
 				throw new RuntimeException(e);
 			}
 		}
-		// add MyConnectionDecorator as last decorator.
-		MyConnectionDecorator myDec = new MyConnectionDecorator();
-		myDec.setMyDataSource(this);
-		myDec.setDelegateConnection(curConn);
-		curConn = myDec;
+		// set raw connection and fully decorated connection for all decorators
+		for (ConnectionDecorator dec : decs) {
+			dec.setRawConnection(connection);
+			dec.setFullyDecoratedConnection(curConn);
+		}
 		return curConn;
 	}
 

@@ -28,6 +28,8 @@ import java.util.Properties;
 public class ConnectionDecorator implements Connection {
 
 	protected Connection delegateConnection;
+	protected Connection rawConnection;
+	protected Connection fullyDecoratedConnection;
 	protected MyDataSource myDataSource;
 
 	/**
@@ -47,6 +49,34 @@ public class ConnectionDecorator implements Connection {
 	}
 
 	/**
+	 * The undecorated raw connection.
+	 */
+	public Connection getRawConnection() {
+		return rawConnection;
+	}
+
+	/**
+	 * The undecorated raw connection.
+	 */
+	public void setRawConnection(Connection rawConnection) {
+		this.rawConnection = rawConnection;
+	}
+
+	/**
+	 * The fully decorated connection.
+	 */
+	public Connection getFullyDecoratedConnection() {
+		return fullyDecoratedConnection;
+	}
+
+	/**
+	 * The fully decorated connection.
+	 */
+	public void setFullyDecoratedConnection(Connection fullyDecoratedConnection) {
+		this.fullyDecoratedConnection = fullyDecoratedConnection;
+	}
+
+	/**
 	 * Related {@link MyDataSource} instance.
 	 */
 	public MyDataSource getMyDataSource() {
@@ -58,6 +88,53 @@ public class ConnectionDecorator implements Connection {
 	 */
 	public void setMyDataSource(MyDataSource myDataSource) {
 		this.myDataSource = myDataSource;
+	}
+
+	/**
+	 * Override this method to use custom {@link StatementDecorator} for
+	 * <code>createStatement</code> methods.
+	 * <p>
+	 * Remember to <code>setConnection</code> on the decorator object using the
+	 * <code>fullyDecoratedConnection</code> for consistent behavior.
+	 */
+	public Statement decorateStatement(Statement statement) {
+		StatementDecorator dec = new StatementDecorator();
+		dec.setDelegateStatement(statement);
+		dec.setMyDataSource(myDataSource);
+		dec.setConnection(fullyDecoratedConnection);
+		return dec;
+	}
+
+	/**
+	 * Override this method to use custom {@link PreparedStatementDecorator} for
+	 * <code>prepareStatement</code> methods.
+	 * <p>
+	 * Remember to <code>setConnection</code> on the decorator object using the
+	 * <code>fullyDecoratedConnection</code> for consistent behavior.
+	 */
+	public PreparedStatement decoratePreparedStatement(
+			PreparedStatement preparedStatement) {
+		PreparedStatementDecorator dec = new PreparedStatementDecorator();
+		dec.setDelegatePreparedStatement(preparedStatement);
+		dec.setMyDataSource(myDataSource);
+		dec.setConnection(fullyDecoratedConnection);
+		return dec;
+	}
+
+	/**
+	 * Override this method to use custom {@link CallableStatementDecorator} for
+	 * <code>prepareCall</code> methods.
+	 * <p>
+	 * Remember to <code>setConnection</code> on the decorator object using the
+	 * <code>fullyDecoratedConnection</code> for consistent behavior.
+	 */
+	public CallableStatement decorateCallableStatement(
+			CallableStatement callableStatement) {
+		CallableStatementDecorator dec = new CallableStatementDecorator();
+		dec.setDelegateCallableStatement(callableStatement);
+		dec.setMyDataSource(myDataSource);
+		dec.setConnection(fullyDecoratedConnection);
+		return dec;
 	}
 
 	@Override
@@ -72,17 +149,18 @@ public class ConnectionDecorator implements Connection {
 
 	@Override
 	public Statement createStatement() throws SQLException {
-		return delegateConnection.createStatement();
+		return decorateStatement(delegateConnection.createStatement());
 	}
 
 	@Override
 	public PreparedStatement prepareStatement(String sql) throws SQLException {
-		return delegateConnection.prepareStatement(sql);
+		return decoratePreparedStatement(delegateConnection
+				.prepareStatement(sql));
 	}
 
 	@Override
 	public CallableStatement prepareCall(String sql) throws SQLException {
-		return delegateConnection.prepareCall(sql);
+		return decorateCallableStatement(delegateConnection.prepareCall(sql));
 	}
 
 	@Override
@@ -168,22 +246,22 @@ public class ConnectionDecorator implements Connection {
 	@Override
 	public Statement createStatement(int resultSetType, int resultSetConcurrency)
 			throws SQLException {
-		return delegateConnection.createStatement(resultSetType,
-				resultSetConcurrency);
+		return decorateStatement(delegateConnection.createStatement(
+				resultSetType, resultSetConcurrency));
 	}
 
 	@Override
 	public PreparedStatement prepareStatement(String sql, int resultSetType,
 			int resultSetConcurrency) throws SQLException {
-		return delegateConnection.prepareStatement(sql, resultSetType,
-				resultSetConcurrency);
+		return decoratePreparedStatement(delegateConnection.prepareStatement(
+				sql, resultSetType, resultSetConcurrency));
 	}
 
 	@Override
 	public CallableStatement prepareCall(String sql, int resultSetType,
 			int resultSetConcurrency) throws SQLException {
-		return delegateConnection.prepareCall(sql, resultSetType,
-				resultSetConcurrency);
+		return decorateCallableStatement(delegateConnection.prepareCall(sql,
+				resultSetType, resultSetConcurrency));
 	}
 
 	@Override
@@ -230,42 +308,45 @@ public class ConnectionDecorator implements Connection {
 	public Statement createStatement(int resultSetType,
 			int resultSetConcurrency, int resultSetHoldability)
 			throws SQLException {
-		return delegateConnection.createStatement(resultSetType,
-				resultSetConcurrency, resultSetHoldability);
+		return decorateStatement(delegateConnection.createStatement(
+				resultSetType, resultSetConcurrency, resultSetHoldability));
 	}
 
 	@Override
 	public PreparedStatement prepareStatement(String sql, int resultSetType,
 			int resultSetConcurrency, int resultSetHoldability)
 			throws SQLException {
-		return delegateConnection.prepareStatement(sql, resultSetType,
-				resultSetConcurrency, resultSetHoldability);
+		return decoratePreparedStatement(delegateConnection.prepareStatement(
+				sql, resultSetType, resultSetConcurrency, resultSetHoldability));
 	}
 
 	@Override
 	public CallableStatement prepareCall(String sql, int resultSetType,
 			int resultSetConcurrency, int resultSetHoldability)
 			throws SQLException {
-		return delegateConnection.prepareCall(sql, resultSetType,
-				resultSetConcurrency, resultSetHoldability);
+		return decorateCallableStatement(delegateConnection.prepareCall(sql,
+				resultSetType, resultSetConcurrency, resultSetHoldability));
 	}
 
 	@Override
 	public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys)
 			throws SQLException {
-		return delegateConnection.prepareStatement(sql, autoGeneratedKeys);
+		return decoratePreparedStatement(delegateConnection.prepareStatement(
+				sql, autoGeneratedKeys));
 	}
 
 	@Override
 	public PreparedStatement prepareStatement(String sql, int[] columnIndexes)
 			throws SQLException {
-		return delegateConnection.prepareStatement(sql, columnIndexes);
+		return decoratePreparedStatement(delegateConnection.prepareStatement(
+				sql, columnIndexes));
 	}
 
 	@Override
 	public PreparedStatement prepareStatement(String sql, String[] columnNames)
 			throws SQLException {
-		return delegateConnection.prepareStatement(sql, columnNames);
+		return decoratePreparedStatement(delegateConnection.prepareStatement(
+				sql, columnNames));
 	}
 
 	@Override
