@@ -4,7 +4,6 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,7 +83,7 @@ public class MyDataSource implements DataSource {
 	 * DataStorage can be used to store arbitrary data which is used by
 	 * decorators.
 	 * <p>
-	 * This method and returned storage is thread safe.
+	 * This method is thread safe but the returned map is not.
 	 */
 	public Map<String, Object> getDataStorage(String className) {
 		Map<String, Object> storage = dataStorage.get(className);
@@ -92,8 +91,7 @@ public class MyDataSource implements DataSource {
 			synchronized (dataStorage) {
 				storage = dataStorage.get(className);
 				if (storage == null) {
-					storage = Collections
-							.synchronizedMap(new HashMap<String, Object>());
+					storage = new HashMap<String, Object>();
 					dataStorage.put(className, storage);
 				}
 			}
