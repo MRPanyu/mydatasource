@@ -22,8 +22,8 @@ public class LoggingUtils {
 			StringBuilder msg = new StringBuilder();
 			msg.append("Sql: ").append(sql).append("\n");
 			msg.append("ExecuteTime: ").append(executeTime).append("\n");
-			if (config.isLogStackTraces()) {
-				printStackTrace(msg);
+			if (config.isLogStackTrace()) {
+				printStackTrace(msg, config);
 			}
 			if (isWarning) {
 				logger.warn(msg);
@@ -44,8 +44,8 @@ public class LoggingUtils {
 				msg.append("Sql: ").append(sql).append("\n");
 			}
 			msg.append("ExecuteTime: ").append(executeTime).append("\n");
-			if (config.isLogStackTraces()) {
-				printStackTrace(msg);
+			if (config.isLogStackTrace()) {
+				printStackTrace(msg, config);
 			}
 			if (isWarning) {
 				logger.warn(msg);
@@ -76,8 +76,8 @@ public class LoggingUtils {
 				msg.append("]\n");
 			}
 			msg.append("ExecuteTime: ").append(executeTime).append("\n");
-			if (config.isLogStackTraces()) {
-				printStackTrace(msg);
+			if (config.isLogStackTrace()) {
+				printStackTrace(msg, config);
 			}
 			if (isWarning) {
 				logger.warn(msg);
@@ -115,8 +115,8 @@ public class LoggingUtils {
 				}
 			}
 			msg.append("ExecuteTime: ").append(executeTime).append("\n");
-			if (config.isLogStackTraces()) {
-				printStackTrace(msg);
+			if (config.isLogStackTrace()) {
+				printStackTrace(msg, config);
 			}
 			if (isWarning) {
 				logger.warn(msg);
@@ -162,8 +162,8 @@ public class LoggingUtils {
 				}
 			}
 			msg.append("ExecuteTime: ").append(executeTime).append("\n");
-			if (config.isLogStackTraces()) {
-				printStackTrace(msg);
+			if (config.isLogStackTrace()) {
+				printStackTrace(msg, config);
 			}
 			if (isWarning) {
 				logger.warn(msg);
@@ -218,9 +218,9 @@ public class LoggingUtils {
 					}
 				}
 			}
-			msg.append("ExecuteTime: ").append(executeTime).append("\n");
-			if (config.isLogStackTraces()) {
-				printStackTrace(msg);
+			msg.append("ExecuteTime: ").append(executeTime).append("(ms)\n");
+			if (config.isLogStackTrace()) {
+				printStackTrace(msg, config);
 			}
 			if (isWarning) {
 				logger.warn(msg);
@@ -230,13 +230,55 @@ public class LoggingUtils {
 		}
 	}
 
-	private static void printStackTrace(StringBuilder msg) {
-		msg.append("StackTrace: ");
+	private static void printStackTrace(StringBuilder msg, LoggingConfig config) {
+		msg.append("StackTrace:\n");
 		StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-		// ignore the first two elements which is printStackTrace and log
-		for (int i = 2; i < stackTrace.length; i++) {
+		int filteredLines = 0;
+		String[] include = config.getStackTraceFilterInclude();
+		String[] exclude = config.getStackTraceFilterExclude();
+		for (int i = 0; i < stackTrace.length; i++) {
 			StackTraceElement el = stackTrace[i];
-			msg.append("\t").append(el.toString()).append("\n");
+			if (i == 0 && el.getClassName().equals(Thread.class.getName())) {
+				continue;
+			}
+			if (el.getClassName().equals(LoggingUtils.class.getName())) {
+				continue;
+			}
+			String elStr = el.toString();
+			if (include.length > 0 || exclude.length > 0) {
+				boolean isPrint = true;
+				if (include.length > 0) {
+					isPrint = false;
+					for (int j = 0; j < include.length; j++) {
+						if (elStr.contains(include[j])) {
+							isPrint = true;
+							break;
+						}
+					}
+				}
+				if (isPrint && exclude.length > 0) {
+					for (int j = 0; j < exclude.length; j++) {
+						if (elStr.contains(exclude[j])) {
+							isPrint = false;
+							break;
+						}
+					}
+				}
+				if (!isPrint) {
+					filteredLines++;
+					continue;
+				}
+			}
+			if (filteredLines > 0) {
+				msg.append("\t").append("... ").append(filteredLines)
+						.append(" lines filtered ...\n");
+			}
+			msg.append("\t").append(elStr).append("\n");
+			filteredLines = 0;
+		}
+		if (filteredLines > 0) {
+			msg.append("\t").append("... ").append(filteredLines)
+					.append(" lines filtered ...\n");
 		}
 	}
 

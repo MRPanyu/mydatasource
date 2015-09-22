@@ -22,14 +22,14 @@ public class LoggingConnectionDecorator extends ConnectionDecorator {
 			PreparedStatement preparedStatement, String sql) {
 		LoggingConfig config = LoggingConfig.getConfig(myDataSource);
 		if (config.isLogParameters()) {
-			LoggingPreparedStatementDecorator dec = new LoggingPreparedStatementDecorator();
+			LoggingPreparedStatementDecoratorEx dec = new LoggingPreparedStatementDecoratorEx();
 			dec.setDelegatePreparedStatement(preparedStatement);
 			dec.setMyDataSource(myDataSource);
 			dec.setConnection(fullyDecoratedConnection);
 			dec.setSql(sql);
 			return dec;
 		} else {
-			LoggingPreparedStatementDecoratorEx dec = new LoggingPreparedStatementDecoratorEx();
+			LoggingPreparedStatementDecorator dec = new LoggingPreparedStatementDecorator();
 			dec.setDelegatePreparedStatement(preparedStatement);
 			dec.setMyDataSource(myDataSource);
 			dec.setConnection(fullyDecoratedConnection);
@@ -43,14 +43,14 @@ public class LoggingConnectionDecorator extends ConnectionDecorator {
 			CallableStatement callableStatement, String sql) {
 		LoggingConfig config = LoggingConfig.getConfig(myDataSource);
 		if (config.isLogParameters()) {
-			LoggingCallableStatementDecorator dec = new LoggingCallableStatementDecorator();
+			LoggingCallableStatementDecoratorEx dec = new LoggingCallableStatementDecoratorEx();
 			dec.setDelegateCallableStatement(callableStatement);
 			dec.setMyDataSource(myDataSource);
 			dec.setConnection(fullyDecoratedConnection);
 			dec.setSql(sql);
 			return dec;
 		} else {
-			LoggingCallableStatementDecoratorEx dec = new LoggingCallableStatementDecoratorEx();
+			LoggingCallableStatementDecorator dec = new LoggingCallableStatementDecorator();
 			dec.setDelegateCallableStatement(callableStatement);
 			dec.setMyDataSource(myDataSource);
 			dec.setConnection(fullyDecoratedConnection);
