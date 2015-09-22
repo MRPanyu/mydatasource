@@ -21,7 +21,7 @@ public class LoggingUtils {
 		if ((isWarning && logger.isWarnEnabled()) || logger.isDebugEnabled()) {
 			StringBuilder msg = new StringBuilder();
 			msg.append("Sql: ").append(sql).append("\n");
-			msg.append("ExecuteTime: ").append(executeTime).append("\n");
+			msg.append("ExecuteTime: ").append(executeTime).append("(ms)\n");
 			if (config.isLogStackTrace()) {
 				printStackTrace(msg, config);
 			}
@@ -43,7 +43,7 @@ public class LoggingUtils {
 			for (String sql : batchedSqls) {
 				msg.append("Sql: ").append(sql).append("\n");
 			}
-			msg.append("ExecuteTime: ").append(executeTime).append("\n");
+			msg.append("ExecuteTime: ").append(executeTime).append("(ms)\n");
 			if (config.isLogStackTrace()) {
 				printStackTrace(msg, config);
 			}
@@ -75,7 +75,7 @@ public class LoggingUtils {
 				}
 				msg.append("]\n");
 			}
-			msg.append("ExecuteTime: ").append(executeTime).append("\n");
+			msg.append("ExecuteTime: ").append(executeTime).append("(ms)\n");
 			if (config.isLogStackTrace()) {
 				printStackTrace(msg, config);
 			}
@@ -114,7 +114,7 @@ public class LoggingUtils {
 					msg.append("]\n");
 				}
 			}
-			msg.append("ExecuteTime: ").append(executeTime).append("\n");
+			msg.append("ExecuteTime: ").append(executeTime).append("(ms)\n");
 			if (config.isLogStackTrace()) {
 				printStackTrace(msg, config);
 			}
@@ -161,7 +161,7 @@ public class LoggingUtils {
 					msg.append("}\n");
 				}
 			}
-			msg.append("ExecuteTime: ").append(executeTime).append("\n");
+			msg.append("ExecuteTime: ").append(executeTime).append("(ms)\n");
 			if (config.isLogStackTrace()) {
 				printStackTrace(msg, config);
 			}
