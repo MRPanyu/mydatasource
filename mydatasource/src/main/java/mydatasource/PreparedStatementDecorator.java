@@ -32,6 +32,15 @@ public class PreparedStatementDecorator extends StatementDecorator implements
 		PreparedStatement {
 
 	protected PreparedStatement delegatePreparedStatement;
+	protected String sql;
+	
+	public String getSql() {
+		return sql;
+	}
+
+	public void setSql(String sql) {
+		this.sql = sql;
+	}
 
 	/**
 	 * Delegated statement object, which is either the raw statement or another

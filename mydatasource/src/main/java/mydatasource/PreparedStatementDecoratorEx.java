@@ -15,36 +15,44 @@ import java.sql.SQLException;
 import java.sql.SQLXML;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
- * Extended {@link PreparedStatementDecorator} which stores sql and parameters.
+ * Extended {@link PreparedStatementDecorator} that stores parameters.
  * 
  * @author Panyu
  *
  */
 public class PreparedStatementDecoratorEx extends PreparedStatementDecorator {
 
-	protected String sql;
 	protected Map<Integer, Object> indexedParameters = new LinkedHashMap<Integer, Object>();
 	protected int maxParameterIndex = 0;
 
-	public String getSql() {
-		return sql;
-	}
-
-	public void setSql(String sql) {
-		this.sql = sql;
-	}
+	protected List<Map<Integer, Object>> batchedIndexedParameters = new ArrayList<Map<Integer, Object>>();
+	protected List<Integer> batchedMaxParameterIndex = new ArrayList<Integer>();
 
 	public Object getParameter(int parameterIndex) {
 		return indexedParameters.get(parameterIndex);
 	}
 
+	public Map<Integer, Object> getIndexedParameters() {
+		return indexedParameters;
+	}
+
 	public int getMaxParameterIndex() {
 		return maxParameterIndex;
+	}
+
+	public List<Map<Integer, Object>> getBatchedIndexedParameters() {
+		return batchedIndexedParameters;
+	}
+
+	public List<Integer> getBatchedMaxParameterIndex() {
+		return batchedMaxParameterIndex;
 	}
 
 	@Override
@@ -414,6 +422,22 @@ public class PreparedStatementDecoratorEx extends PreparedStatementDecorator {
 		super.setNClob(parameterIndex, reader);
 		indexedParameters.put(parameterIndex, reader);
 		maxParameterIndex = Math.max(maxParameterIndex, parameterIndex);
+	}
+
+	@Override
+	public void addBatch() throws SQLException {
+		super.addBatch();
+		// make a copy
+		batchedIndexedParameters.add(new LinkedHashMap<Integer, Object>(
+				indexedParameters));
+		batchedMaxParameterIndex.add(maxParameterIndex);
+	}
+
+	@Override
+	public void clearBatch() throws SQLException {
+		super.clearBatch();
+		batchedIndexedParameters.clear();
+		batchedMaxParameterIndex.clear();
 	}
 
 }

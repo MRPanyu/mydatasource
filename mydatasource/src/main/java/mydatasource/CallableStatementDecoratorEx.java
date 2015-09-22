@@ -15,24 +15,27 @@ import java.sql.SQLException;
 import java.sql.SQLXML;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
+/**
+ * Extended {@link CallableStatementDecorator} that stores parameters.
+ * 
+ * @author Panyu
+ *
+ */
 public class CallableStatementDecoratorEx extends CallableStatementDecorator {
 
-	protected String sql;
 	protected Map<Integer, Object> indexedParameters = new LinkedHashMap<Integer, Object>();
 	protected int maxParameterIndex = 0;
 	protected Map<String, Object> namedParameters = new LinkedHashMap<String, Object>();
 
-	public String getSql() {
-		return sql;
-	}
-
-	public void setSql(String sql) {
-		this.sql = sql;
-	}
+	protected List<Map<Integer, Object>> batchedIndexedParameters = new ArrayList<Map<Integer, Object>>();
+	protected List<Integer> batchedMaxParameterIndex = new ArrayList<Integer>();
+	protected List<Map<String, Object>> batchedNamedParameters = new ArrayList<Map<String, Object>>();
 
 	public Object getParameter(int parameterIndex) {
 		return indexedParameters.get(parameterIndex);
@@ -42,12 +45,28 @@ public class CallableStatementDecoratorEx extends CallableStatementDecorator {
 		return maxParameterIndex;
 	}
 
+	public Map<Integer, Object> getIndexedParameters() {
+		return indexedParameters;
+	}
+
 	public Object getParameter(String parameterName) {
 		return namedParameters.get(parameterName);
 	}
 
 	public Map<String, Object> getNamedParameters() {
 		return this.namedParameters;
+	}
+
+	public List<Map<Integer, Object>> getBatchedIndexedParameters() {
+		return batchedIndexedParameters;
+	}
+
+	public List<Integer> getBatchedMaxParameterIndex() {
+		return batchedMaxParameterIndex;
+	}
+
+	public List<Map<String, Object>> getBatchedNamedParameters() {
+		return batchedNamedParameters;
 	}
 
 	@Override
@@ -715,5 +734,24 @@ public class CallableStatementDecoratorEx extends CallableStatementDecorator {
 		super.setNClob(parameterIndex, reader);
 		indexedParameters.put(parameterIndex, reader);
 		maxParameterIndex = Math.max(maxParameterIndex, parameterIndex);
+	}
+
+	@Override
+	public void addBatch() throws SQLException {
+		super.addBatch();
+		// make a copy
+		batchedIndexedParameters.add(new LinkedHashMap<Integer, Object>(
+				indexedParameters));
+		batchedMaxParameterIndex.add(maxParameterIndex);
+		batchedNamedParameters.add(new LinkedHashMap<String, Object>(
+				namedParameters));
+	}
+
+	@Override
+	public void clearBatch() throws SQLException {
+		super.clearBatch();
+		batchedIndexedParameters.clear();
+		batchedMaxParameterIndex.clear();
+		batchedNamedParameters.clear();
 	}
 }
