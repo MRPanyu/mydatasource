@@ -26,11 +26,20 @@ public class MyDataSource implements DataSource {
 
 	protected Log logger = LogFactory.getLog(this.getClass());
 
+	protected String name = "myDataSource";
 	protected DataSource dataSource;
 	protected List<String> connectionDecorators = new ArrayList<String>();
 	protected List<Class<?>> connectionDecoratorClasses = new ArrayList<Class<?>>();
 	protected Map<String, Map<String, Object>> dataStorage = new HashMap<String, Map<String, Object>>();
 	protected Properties configs = new Properties();
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 
 	/**
 	 * The real <code>DataSource</code>.
@@ -187,6 +196,7 @@ public class MyDataSource implements DataSource {
 		for (ConnectionDecorator dec : decs) {
 			dec.setRawConnection(connection);
 			dec.setFullyDecoratedConnection(curConn);
+			dec.afterPropertiesSet();
 		}
 		return curConn;
 	}

@@ -91,6 +91,13 @@ public class ConnectionDecorator implements Connection {
 	}
 
 	/**
+	 * This method is called just after connection opened and properties set.
+	 * Can be overwrite by subclasses to implement custom callback functions.
+	 */
+	public void afterPropertiesSet() {
+	}
+
+	/**
 	 * Override this method to use custom {@link StatementDecorator} for
 	 * <code>createStatement</code> methods.
 	 * <p>
