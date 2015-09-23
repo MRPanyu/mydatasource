@@ -26,6 +26,8 @@ mydatasource是一个jdbc datasource包装工具，通过mydatasource包装原�
 			<list>
 				<!-- sql日志记录组件 -->
 				<value>mydatasource.utility.logging.LoggingConnectionDecorator</value>
+				<!-- 统计组件（日志记录当前连接数，检测可能的连接泄漏问题） -->
+				<value>mydatasource.utility.statistic.StatisticConnectionDecorator</value>
 			</list>
 		</property>
 		<!-- jdbc增强组件所需的配置信息 -->
@@ -40,6 +42,35 @@ mydatasource是一个jdbc datasource包装工具，通过mydatasource包装原�
 				<prop key="logging.logStackTrace">true</prop>
 				<!-- 堆栈过滤配置（多个过滤配置之间用分号隔开，配置前带减号的表示堆栈信息必须不包含减号后面的字符串，不带减号的表示堆栈信息必须包含该字符串。如下面例子就表示堆栈信息需包含sinosoft，但不包含$$FastClassByCGLIB$$或者$$EnhancerByCGLIB$$） -->
 				<prop key="logging.stackTraceFilter">sinosoft;-$$FastClassByCGLIB$$;-$$EnhancerByCGLIB$$</prop>
+
+				<!-- 以下为sql日志记录组件用 -->
+				<!-- 间隔多久（秒）记录一次统计信息 -->
+				<prop key="statistic.logInterval">30</prop>
+				<!-- Connection打开多久（秒）未关闭则报告泄漏 -->
+				<prop key="statistic.possibleLeakTime">60</prop>
 			</props>
 		</property>
 	</bean>
+
+目前各组件输出都是通过commons-logging进行文件日志输出，示例的log4j配置片段如下：
+
+	log4j.appender.mydatasource_logging=org.apache.log4j.DailyRollingFileAppender
+	log4j.appender.mydatasource_logging.encoding=GBK
+	log4j.appender.mydatasource_logging.File=logs/mydatasource_logging.log
+	log4j.appender.mydatasource_logging.Append=true
+	log4j.appender.mydatasource_logging.layout=org.apache.log4j.PatternLayout
+	log4j.appender.mydatasource_logging.layout.ConversionPattern=[%d{yyyy-MM-dd HH:mm:ss}][%p][%c]%n%m%n
+	# development environment
+	log4j.logger.mydatasource.utility.logging=DEBUG,mydatasource_logging
+	# production environment
+	# log4j.logger.mydatasource.utility.logging=WARN,mydatasource_logging
+	log4j.additivity.mydatasource.utility.logging=false
+
+	log4j.appender.mydatasource_statistic=org.apache.log4j.DailyRollingFileAppender
+	log4j.appender.mydatasource_statistic.encoding=GBK
+	log4j.appender.mydatasource_statistic.File=logs/mydatasource_statistic.log
+	log4j.appender.mydatasource_statistic.Append=true
+	log4j.appender.mydatasource_statistic.layout=org.apache.log4j.PatternLayout
+	log4j.appender.mydatasource_statistic.layout.ConversionPattern=[%d{yyyy-MM-dd HH:mm:ss}][%p][%c]%n%m%n
+	log4j.logger.mydatasource.utility.statistic=INFO,mydatasource_statistic
+	log4j.additivity.mydatasource.utility.statistic=false
