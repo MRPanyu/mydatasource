@@ -80,7 +80,7 @@ MyDataSource各组件均通过commons-logging进行日志输出，需配合工�
 	log4j.additivity.mydatasource.utility.statistic=false
 	
 	log4j.appender.mydatasource_bigresult=org.apache.log4j.DailyRollingFileAppender
-	log4j.appender.mydatasource_bigresult.File=logs/mydatasource_statistic.log
+	log4j.appender.mydatasource_bigresult.File=logs/mydatasource_bigresult.log
 	log4j.appender.mydatasource_bigresult.Append=true
 	log4j.appender.mydatasource_bigresult.layout=org.apache.log4j.PatternLayout
 	log4j.appender.mydatasource_bigresult.layout.ConversionPattern=[%d{yyyy-MM-dd HH:mm:ss}][%p][%c]%n%m%n
