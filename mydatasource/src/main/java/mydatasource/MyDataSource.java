@@ -16,8 +16,8 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * Custom <code>DataSource</code> that wraps the real <code>DataSource</code>
- * and provides decoration functions for <code>Connection</code>s and
- * <code>Statement</code>s.
+ * and registers a list of {@link ConnectionDecorators} to provide custom jdbc
+ * intercepter function.
  * 
  * @author Panyu
  *
