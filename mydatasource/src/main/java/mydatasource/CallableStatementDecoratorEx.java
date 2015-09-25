@@ -366,6 +366,33 @@ public class CallableStatementDecoratorEx extends CallableStatementDecorator {
 		namedParameters.put(parameterName, reader);
 	}
 
+	@Override
+	public void clearParameters() throws SQLException {
+		super.clearParameters();
+		indexedParameters.clear();
+		maxParameterIndex = 0;
+		namedParameters.clear();
+	}
+
+	@Override
+	public void addBatch() throws SQLException {
+		super.addBatch();
+		// make a copy
+		batchedIndexedParameters.add(new LinkedHashMap<Integer, Object>(
+				indexedParameters));
+		batchedMaxParameterIndex.add(maxParameterIndex);
+		batchedNamedParameters.add(new LinkedHashMap<String, Object>(
+				namedParameters));
+	}
+
+	@Override
+	public void clearBatch() throws SQLException {
+		super.clearBatch();
+		batchedIndexedParameters.clear();
+		batchedMaxParameterIndex.clear();
+		batchedNamedParameters.clear();
+	}
+
 	// ------ copied from PreparedStatementDecoratorEx ------
 	@Override
 	public void setNull(int parameterIndex, int sqlType) throws SQLException {
@@ -489,13 +516,6 @@ public class CallableStatementDecoratorEx extends CallableStatementDecorator {
 		super.setBinaryStream(parameterIndex, x, length);
 		indexedParameters.put(parameterIndex, x);
 		maxParameterIndex = Math.max(maxParameterIndex, parameterIndex);
-	}
-
-	@Override
-	public void clearParameters() throws SQLException {
-		super.clearParameters();
-		indexedParameters.clear();
-		maxParameterIndex = 0;
 	}
 
 	@Override
@@ -736,22 +756,4 @@ public class CallableStatementDecoratorEx extends CallableStatementDecorator {
 		maxParameterIndex = Math.max(maxParameterIndex, parameterIndex);
 	}
 
-	@Override
-	public void addBatch() throws SQLException {
-		super.addBatch();
-		// make a copy
-		batchedIndexedParameters.add(new LinkedHashMap<Integer, Object>(
-				indexedParameters));
-		batchedMaxParameterIndex.add(maxParameterIndex);
-		batchedNamedParameters.add(new LinkedHashMap<String, Object>(
-				namedParameters));
-	}
-
-	@Override
-	public void clearBatch() throws SQLException {
-		super.clearBatch();
-		batchedIndexedParameters.clear();
-		batchedMaxParameterIndex.clear();
-		batchedNamedParameters.clear();
-	}
 }
