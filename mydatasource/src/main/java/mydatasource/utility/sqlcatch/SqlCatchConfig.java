@@ -35,7 +35,7 @@ public class SqlCatchConfig {
 			String[] arrConfigPatterns = strConfigPatterns.split(";");
 			for (String strConfigPattern : arrConfigPatterns) {
 				if (strConfigPattern.trim().length() > 0) {
-					Pattern pattern = Pattern.compile(strConfigPattern);
+					Pattern pattern = Pattern.compile(strConfigPattern.trim());
 					patterns.add(pattern);
 				}
 			}
