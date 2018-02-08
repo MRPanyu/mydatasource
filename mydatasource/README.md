@@ -60,7 +60,10 @@ MyDataSource是一个在JDBC API基础上进行包装代理的组件，可以对
 				<prop key="bigResult.logStackTrace">true</prop>
 				
 				<!-- 4. 以下为捕获sql组件用，捕获的格式，多个正则表达式之间用分号";"隔开 -->
-				<prop key="sqlcatch.patterns">select count\(\*\) from users where .+;select \* from company .+</prop>
+				<prop key="sqlcatch.patterns">
+					select count\(\*\) from users where .+;
+					select \* from company .+;
+				</prop>
 			</props>
 		</property>
 	</bean>
@@ -91,3 +94,11 @@ MyDataSource各组件均通过commons-logging进行日志输出，需配合工�
 	log4j.appender.mydatasource_bigresult.layout.ConversionPattern=[%d{yyyy-MM-dd HH:mm:ss}][%p][%c]%n%m%n
 	log4j.logger.mydatasource.utility.bigresult=INFO,mydatasource_bigresult
 	log4j.additivity.mydatasource.utility.bigresult=false
+
+	log4j.appender.mydatasource_sqlcatch=org.apache.log4j.DailyRollingFileAppender
+	log4j.appender.mydatasource_sqlcatch.File=logs/mydatasource_sqlcatch.log
+	log4j.appender.mydatasource_sqlcatch.Append=true
+	log4j.appender.mydatasource_sqlcatch.layout=org.apache.log4j.PatternLayout
+	log4j.appender.mydatasource_sqlcatch.layout.ConversionPattern=[%d{yyyy-MM-dd HH:mm:ss}][%p][%c]%n%m%n
+	log4j.logger.mydatasource.utility.sqlcatch=INFO,mydatasource_sqlcatch
+	log4j.additivity.mydatasource.utility.sqlcatch=false
