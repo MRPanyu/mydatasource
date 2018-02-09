@@ -4,6 +4,9 @@
 *.tar
 *.rar
 *.log
+.project
+.classpath
+.settings
 bin
 build
 target

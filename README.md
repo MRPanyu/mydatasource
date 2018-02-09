@@ -8,6 +8,8 @@ MyDataSource是一个在JDBC API基础上进行包装代理的组件，可以对
 
 将mydatasource.jar置入工程classpath中，所需依赖jar包仅commons-logging.jar。
 
+注：目前因JDK6与JDK8中JDBC接口版本不同，目前拆分为两套工程。用法与具体代码内容基本一致，仅JDBC部分因接口差异JDK8版本额外多几个方法。
+
 一般通过spring配置将其集成到应用中：
 
 	<!-- 这个是原始的dataSource对象，名字调整成rawDataSource -->
